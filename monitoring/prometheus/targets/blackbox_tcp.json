@@ -1,0 +1,47 @@
+[
+  {
+    "targets": [
+      "10.1.102.2:8088"
+    ],
+    "labels": {
+      "vm": "vm-siakad-be-01",
+      "role": "service",
+      "app": "siakad",
+      "service_tier": "be",
+      "owner_org": "Direktorat A",
+      "env": "prod",
+      "site": "dc-jkt",
+      "port_name": "api"
+    }
+  },
+  {
+    "targets": [
+      "10.1.102.3:5432"
+    ],
+    "labels": {
+      "vm": "vm-siakad-db-01",
+      "role": "service",
+      "app": "siakad",
+      "service_tier": "db",
+      "owner_org": "Direktorat A",
+      "env": "prod",
+      "site": "dc-jkt",
+      "port_name": "postgres"
+    }
+  },
+  {
+    "targets": [
+      "10.1.102.10:443"
+    ],
+    "labels": {
+      "vm": "vm-siakad-lb-01",
+      "role": "service",
+      "app": "siakad",
+      "service_tier": "lb",
+      "owner_org": "Direktorat A",
+      "env": "prod",
+      "site": "dc-jkt",
+      "port_name": "https"
+    }
+  }
+]

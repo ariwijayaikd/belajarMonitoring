@@ -1,0 +1,16 @@
+[
+  {
+    "targets": [
+      "192.168.18.23:8080"
+    ],
+    "labels": {
+      "vm": "monitoring-central",
+      "role": "central",
+      "app": "monitoring",
+      "service_tier": "central",
+      "owner_org": "Pusdatin",
+      "env": "prod",
+      "site": "dc-jkt"
+    }
+  }
+]

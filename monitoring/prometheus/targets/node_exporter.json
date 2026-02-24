@@ -1,0 +1,72 @@
+[
+  {
+    "targets": [
+      "10.1.102.2:9100"
+    ],
+    "labels": {
+      "vm": "vm-siakad-be-01",
+      "role": "service",
+      "app": "siakad",
+      "service_tier": "be",
+      "owner_org": "Direktorat A",
+      "env": "prod",
+      "site": "dc-jkt"
+    }
+  },
+  {
+    "targets": [
+      "10.1.102.4:9100"
+    ],
+    "labels": {
+      "vm": "vm-siakad-fe-01",
+      "role": "service",
+      "app": "siakad",
+      "service_tier": "fe",
+      "owner_org": "Direktorat A",
+      "env": "prod",
+      "site": "dc-jkt"
+    }
+  },
+  {
+    "targets": [
+      "10.1.102.3:9100"
+    ],
+    "labels": {
+      "vm": "vm-siakad-db-01",
+      "role": "service",
+      "app": "siakad",
+      "service_tier": "db",
+      "owner_org": "Direktorat A",
+      "env": "prod",
+      "site": "dc-jkt"
+    }
+  },
+  {
+    "targets": [
+      "10.1.102.10:9100"
+    ],
+    "labels": {
+      "vm": "vm-siakad-lb-01",
+      "role": "service",
+      "app": "siakad",
+      "service_tier": "lb",
+      "owner_org": "Direktorat A",
+      "env": "prod",
+      "site": "dc-jkt"
+    }
+  },
+  {
+    "targets": [
+      "192.168.18.23:9100"
+    ],
+    "labels": {
+      "vm": "monitoring-central",
+      "role": "central",
+      "app": "monitoring",
+      "service_tier": "central",
+      "owner_org": "Pusdatin",
+      "env": "prod",
+      "site": "dc-jkt"
+    }
+  }
+]

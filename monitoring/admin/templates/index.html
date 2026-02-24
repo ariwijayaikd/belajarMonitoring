@@ -1,0 +1,21 @@
+<html>
+<body>
+<h2>Monitoring Admin Panel</h2>
+
+<h3>Add VM</h3>
+<form method="post" action="/add">
+Name: <input name="name"><br>
+IP: <input name="ip"><br>
+App: <input name="app_name"><br>
+Tier: <input name="tier"><br>
+Owner: <input name="owner"><br>
+Env: <input name="env"><br>
+Site: <input name="site"><br>
+<button type="submit">Add</button>
+</form>
+
+<h3>Current Inventory</h3>
+<pre>{{ inventory }}</pre>
+
+</body>
+</html>

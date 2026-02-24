@@ -19,46 +19,39 @@ scrape_configs:
     static_configs:
       - targets: ["prometheus:9090"]
 
-  # Node exporter tiap VM service (docker compose di tiap VM akan expose :9100 pada host)
+  # Node exporter (dari generated targets)
   - job_name: "node_exporter"
-    static_configs:
-      - targets: ["10.1.101.102:9100"]
-        labels:
-          role: "service"
-      - targets: ["192.168.18.23:9100"]
-        labels:
-          role: "central"
+    file_sd_configs:
+      - files:
+          - /etc/prometheus/targets/node_exporter.json
+        refresh_interval: 30s
 
-  # (Opsional) cAdvisor jika kamu pasang di tiap VM service
-  # - job_name: "cadvisor_central"
-  #   scrape_interval: 15s
-  #   static_configs:
-  #     - targets:
-  #         - "192.168.18.23:8080"
-  #   relabel_configs:
-  #     - target_label: role
-  #       replacement: "central"
-
+  # cAdvisor services (dari generated targets)
   - job_name: "cadvisor_services"
     scrape_interval: 15s
-    static_configs:
-      - targets:
-          - "10.1.101.102:8080"
-          # - "10.0.1.12:8080"
-    relabel_configs:
-      - target_label: role
-        replacement: "service"
+    file_sd_configs:
+      - files:
+          - /etc/prometheus/targets/cadvisor_services.json
+        refresh_interval: 30s
 
-  # Blackbox HTTP probe (SLA: up + latency threshold)
+  # cAdvisor central (opsional)
+  - job_name: "cadvisor_central"
+    scrape_interval: 15s
+    file_sd_configs:
+      - files:
+          - /etc/prometheus/targets/cadvisor_central.json
+        refresh_interval: 30s
+
+  # Blackbox HTTP (targets adalah URL; blackbox tetap di replacement)
   - job_name: "blackbox_http"
     scrape_interval: 15s
     metrics_path: /probe
     params:
       module: [http_2xx_15s]
-    static_configs:
-      - targets:
-          # contoh endpoint SLA
-          # - "https://dev-kemdiktisaintek.go.id"
+    file_sd_configs:
+      - files:
+          - /etc/prometheus/targets/blackbox_http.json
+        refresh_interval: 30s
     relabel_configs:
       - source_labels: [__address__]
         target_label: __param_target
@@ -67,16 +60,16 @@ scrape_configs:
       - target_label: __address__
         replacement: "blackbox:9115"
 
-  # Blackbox TCP probe
+  # Blackbox TCP (targets adalah host:port; blackbox tetap di replacement)
   - job_name: "blackbox_tcp"
     scrape_interval: 15s
     metrics_path: /probe
     params:
       module: [tcp_connect]
-    static_configs:
-      - targets:
-          # - "10.1.101.102:3000"
-          # - "10.0.1.12:5432"
+    file_sd_configs:
+      - files:
+          - /etc/prometheus/targets/blackbox_tcp.json
+        refresh_interval: 30s
     relabel_configs:
       - source_labels: [__address__]
         target_label: __param_target

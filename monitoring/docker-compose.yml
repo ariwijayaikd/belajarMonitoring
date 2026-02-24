@@ -47,6 +47,7 @@ services:
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - ./prometheus/rules:/etc/prometheus/rules:ro
+      - ./prometheus/targets:/etc/prometheus/targets:ro
       - prom_data:/prometheus
     ports:
       - "9090:9090"
@@ -73,6 +74,16 @@ services:
     depends_on:
       - prometheus
       - victoriametrics
+
+  monitoring-admin:
+    build: ./admin
+    container_name: monitoring-admin
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./:/data
+    depends_on:
+      - prometheus
 
 volumes:
   prom_data:

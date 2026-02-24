@@ -1,0 +1,97 @@
+vms:
+  # Backend
+  - name: vm-siakad-be-01
+    ip: 10.1.102.2
+    meta:
+      app: "siakad"
+      service_tier: "be"
+      owner_org: "Direktorat A"
+      env: "prod"
+      site: "dc-jkt"
+    ports:
+      node_exporter: 9100
+      cadvisor: 8080
+    blackbox:
+      http:
+        - url: "https://api.siakad.domainmu.go.id/health"
+          labels:
+            endpoint: "health"
+      tcp:
+        - target: "10.1.102.2:8088"
+          labels:
+            port_name: "api"
+
+  # Frontend
+  - name: vm-siakad-fe-01
+    ip: 10.1.102.4
+    meta:
+      app: "siakad"
+      service_tier: "fe"
+      owner_org: "Direktorat A"
+      env: "prod"
+      site: "dc-jkt"
+    ports:
+      node_exporter: 9100
+      cadvisor: 8080
+    blackbox:
+      http:
+        - url: "https://siakad.domainmu.go.id/"
+          labels:
+            endpoint: "home"
+        - url: "https://siakad.domainmu.go.id/health"
+          labels:
+            endpoint: "health"
+
+  # Database
+  - name: vm-siakad-db-01
+    ip: 10.1.102.3
+    meta:
+      app: "siakad"
+      service_tier: "db"
+      owner_org: "Direktorat A"
+      env: "prod"
+      site: "dc-jkt"
+    ports:
+      node_exporter: 9100
+      cadvisor: 8080
+    blackbox:
+      tcp:
+        - target: "10.1.102.3:5432"
+          labels:
+            port_name: "postgres"
+
+  # Load balancer (misalnya nginx/haproxy/ingress VM)
+  - name: vm-siakad-lb-01
+    ip: 10.1.102.10
+    meta:
+      app: "siakad"
+      service_tier: "lb"
+      owner_org: "Direktorat A"
+      env: "prod"
+      site: "dc-jkt"
+    ports:
+      node_exporter: 9100
+      cadvisor: 8080
+    blackbox:
+      http:
+        - url: "https://siakad.domainmu.go.id/"
+          labels:
+            endpoint: "public"
+      tcp:
+        - target: "10.1.102.10:443"
+          labels:
+            port_name: "https"
+
+  # Central monitoring VM (opsional)
+  - name: monitoring-central
+    ip: 192.168.18.23
+    meta:
+      app: "monitoring"
+      service_tier: "central"
+      owner_org: "Pusdatin"
+      env: "prod"
+      site: "dc-jkt"
+    ports:
+      node_exporter: 9100
+      cadvisor: 8080
+    role: central

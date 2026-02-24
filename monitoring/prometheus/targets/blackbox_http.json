@@ -1,0 +1,62 @@
+[
+  {
+    "targets": [
+      "https://api.siakad.domainmu.go.id/health"
+    ],
+    "labels": {
+      "vm": "vm-siakad-be-01",
+      "role": "service",
+      "app": "siakad",
+      "service_tier": "be",
+      "owner_org": "Direktorat A",
+      "env": "prod",
+      "site": "dc-jkt",
+      "endpoint": "health"
+    }
+  },
+  {
+    "targets": [
+      "https://siakad.domainmu.go.id/"
+    ],
+    "labels": {
+      "vm": "vm-siakad-fe-01",
+      "role": "service",
+      "app": "siakad",
+      "service_tier": "fe",
+      "owner_org": "Direktorat A",
+      "env": "prod",
+      "site": "dc-jkt",
+      "endpoint": "home"
+    }
+  },
+  {
+    "targets": [
+      "https://siakad.domainmu.go.id/health"
+    ],
+    "labels": {
+      "vm": "vm-siakad-fe-01",
+      "role": "service",
+      "app": "siakad",
+      "service_tier": "fe",
+      "owner_org": "Direktorat A",
+      "env": "prod",
+      "site": "dc-jkt",
+      "endpoint": "health"
+    }
+  },
+  {
+    "targets": [
+      "https://siakad.domainmu.go.id/"
+    ],
+    "labels": {
+      "vm": "vm-siakad-lb-01",
+      "role": "service",
+      "app": "siakad",
+      "service_tier": "lb",
+      "owner_org": "Direktorat A",
+      "env": "prod",
+      "site": "dc-jkt",
+      "endpoint": "public"
+    }
+  }
+]

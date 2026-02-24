@@ -1,0 +1,8 @@
+services:
+  generator:
+    build:
+      context: .
+      dockerfile: generator.Dockerfile
+    image: monitoring-target-generator:1.0
+    volumes:
+      - ./:/data
