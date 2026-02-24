@@ -1,0 +1,42 @@
+groups:
+  - name: sla-blackbox
+    interval: 15s
+    rules:
+      # p95 latency per target (instance di sini = target URL hasil relabel)
+      - record: slo:probe_p95_seconds
+        expr: |
+          histogram_quantile(
+            0.95,
+            sum by (le, instance) (
+              rate(probe_duration_seconds_bucket{job="blackbox_http"}[5m])
+            )
+          )
+
+      # availability: 1 jika sukses
+      - record: slo:probe_up
+        expr: |
+          (probe_success{job="blackbox_http"} == 1)
+
+      # latency ok: 1 jika p95 <= threshold
+      # THRESHOLD: 0.30 (300ms) => ubah angka ini sesuai kebutuhan
+      - record: slo:probe_latency_ok
+        expr: |
+          (slo:probe_p95_seconds <= 0.30)
+
+      # SLO ok: sukses dan latency ok
+      - record: slo:probe_slo_ok
+        expr: |
+          slo:probe_up * on(instance) slo:probe_latency_ok
+
+      # SLA % (rolling) — hitung dari SLO ok
+      - record: sla:probe_30d_percent
+        expr: |
+          avg_over_time(slo:probe_slo_ok[30d]) * 100
+
+      - record: sla:probe_7d_percent
+        expr: |
+          avg_over_time(slo:probe_slo_ok[7d]) * 100
+
+      - record: sla:probe_24h_percent
+        expr: |
+          avg_over_time(slo:probe_slo_ok[24h]) * 100

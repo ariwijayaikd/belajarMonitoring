@@ -1,0 +1,86 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+# Simpan jangka panjang ke VictoriaMetrics
+remote_write:
+  - url: "http://victoriametrics:8428/api/v1/write"
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ["alertmanager:9093"]
+
+rule_files:
+  - /etc/prometheus/rules/*.yml
+
+scrape_configs:
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["prometheus:9090"]
+
+  # Node exporter tiap VM service (docker compose di tiap VM akan expose :9100 pada host)
+  - job_name: "node_exporter"
+    static_configs:
+      - targets: ["10.1.101.102:9100"]
+        labels:
+          role: "service"
+      - targets: ["192.168.18.23:9100"]
+        labels:
+          role: "central"
+
+  # (Opsional) cAdvisor jika kamu pasang di tiap VM service
+  # - job_name: "cadvisor_central"
+  #   scrape_interval: 15s
+  #   static_configs:
+  #     - targets:
+  #         - "192.168.18.23:8080"
+  #   relabel_configs:
+  #     - target_label: role
+  #       replacement: "central"
+
+  - job_name: "cadvisor_services"
+    scrape_interval: 15s
+    static_configs:
+      - targets:
+          - "10.1.101.102:8080"
+          # - "10.0.1.12:8080"
+    relabel_configs:
+      - target_label: role
+        replacement: "service"
+
+  # Blackbox HTTP probe (SLA: up + latency threshold)
+  - job_name: "blackbox_http"
+    scrape_interval: 15s
+    metrics_path: /probe
+    params:
+      module: [http_2xx_15s]
+    static_configs:
+      - targets:
+          # contoh endpoint SLA
+          # - "https://dev-kemdiktisaintek.go.id"
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: "blackbox:9115"
+
+  # Blackbox TCP probe
+  - job_name: "blackbox_tcp"
+    scrape_interval: 15s
+    metrics_path: /probe
+    params:
+      module: [tcp_connect]
+    static_configs:
+      - targets:
+          # - "10.1.101.102:3000"
+          # - "10.0.1.12:5432"
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: "blackbox:9115"

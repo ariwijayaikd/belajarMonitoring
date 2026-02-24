@@ -1,0 +1,22 @@
+groups:
+  - name: alerts-blackbox
+    rules:
+      - alert: ServiceSLOFailing
+        expr: |
+          avg_over_time(slo:probe_slo_ok[10m]) < 0.99
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "SLO gagal (up+latency) selama 10m"
+          description: "Target {{ $labels.instance }} SLO < 99% (10m)."
+
+      - alert: HighP95Latency
+        expr: |
+          slo:probe_p95_seconds > 0.30
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "P95 latency tinggi"
+          description: "Target {{ $labels.instance }} p95 > 300ms selama 10m."

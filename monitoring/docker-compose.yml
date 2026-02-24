@@ -1,0 +1,80 @@
+services:
+  victoriametrics:
+    image: victoriametrics/victoria-metrics:v1.104.0
+    container_name: victoriametrics
+    command:
+      - "-storageDataPath=/storage"
+      # “Tanpa batas” secara konsep = selama storage cukup.
+      # Contoh 10 tahun:
+      - "-retentionPeriod=120"  # bulan
+    volumes:
+      - vm_data:/storage
+    ports:
+      - "8428:8428"
+    restart: unless-stopped
+
+  blackbox:
+    image: prom/blackbox-exporter:v0.25.0
+    container_name: blackbox_exporter
+    command:
+      - "--config.file=/etc/blackbox_exporter/blackbox.yml"
+    volumes:
+      - ./blackbox/blackbox.yml:/etc/blackbox_exporter/blackbox.yml:ro
+    ports:
+      - "9115:9115"
+    restart: unless-stopped
+
+  alertmanager:
+    image: prom/alertmanager:v0.27.0
+    container_name: alertmanager
+    command:
+      - "--config.file=/etc/alertmanager/alertmanager.yml"
+    volumes:
+      - ./alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+    ports:
+      - "9093:9093"
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:v2.55.0
+    container_name: prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      # simpan lokal singkat (mis. 30 hari) untuk query cepat.
+      - "--storage.tsdb.retention.time=30d"
+      - "--web.enable-lifecycle"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./prometheus/rules:/etc/prometheus/rules:ro
+      - prom_data:/prometheus
+    ports:
+      - "9090:9090"
+    restart: unless-stopped
+    depends_on:
+      - blackbox
+      - victoriametrics
+      - alertmanager
+
+  grafana:
+    image: grafana/grafana:11.2.0
+    container_name: grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin123!   # ganti ya
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+      - victoriametrics
+
+volumes:
+  prom_data:
+  grafana_data:
+  vm_data:

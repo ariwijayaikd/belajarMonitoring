@@ -1,0 +1,53 @@
+{
+  "uid": "sla-blackbox",
+  "title": "SLA - Blackbox (Up + Latency Threshold)",
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "30s",
+  "panels": [
+    {
+      "type": "stat",
+      "title": "SLA 30d (%)",
+      "gridPos": { "x": 0, "y": 0, "w": 8, "h": 5 },
+      "targets": [
+        { "expr": "sla:probe_30d_percent", "refId": "A" }
+      ],
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] } }
+    },
+    {
+      "type": "stat",
+      "title": "SLA 7d (%)",
+      "gridPos": { "x": 8, "y": 0, "w": 8, "h": 5 },
+      "targets": [
+        { "expr": "sla:probe_7d_percent", "refId": "A" }
+      ],
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] } }
+    },
+    {
+      "type": "stat",
+      "title": "SLA 24h (%)",
+      "gridPos": { "x": 16, "y": 0, "w": 8, "h": 5 },
+      "targets": [
+        { "expr": "sla:probe_24h_percent", "refId": "A" }
+      ],
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] } }
+    },
+    {
+      "type": "timeseries",
+      "title": "p95 Latency (seconds) per target",
+      "gridPos": { "x": 0, "y": 5, "w": 24, "h": 8 },
+      "targets": [
+        { "expr": "slo:probe_p95_seconds", "refId": "A" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Up (probe_success) per target",
+      "gridPos": { "x": 0, "y": 13, "w": 24, "h": 8 },
+      "targets": [
+        { "expr": "probe_success{job=\"blackbox_http\"}", "refId": "A" }
+      ]
+    }
+  ]
+}

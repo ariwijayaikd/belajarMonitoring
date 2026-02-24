@@ -1,0 +1,229 @@
+{
+  "uid": "monitoring-unified",
+  "title": "Unified Monitoring (Host + Containers + SLA)",
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "30s",
+  "tags": ["node_exporter", "cadvisor", "blackbox", "sla"],
+  "time": { "from": "now-6h", "to": "now" },
+  "templating": {
+    "list": [
+      {
+        "type": "datasource",
+        "name": "ds",
+        "label": "Datasource",
+        "query": "prometheus",
+        "current": { "text": "Prometheus-Local", "value": "Prometheus-Local" }
+      },
+      {
+        "type": "query",
+        "name": "vm",
+        "label": "VM (node_exporter instance)",
+        "datasource": { "type": "prometheus", "uid": "${ds}" },
+        "query": "label_values(up{job=\"node_exporter\"}, instance)",
+        "refresh": 1,
+        "sort": 1,
+        "current": { "text": "All", "value": ".*" },
+        "includeAll": true,
+        "allValue": ".*"
+      },
+      {
+        "type": "query",
+        "name": "container",
+        "label": "Container (name)",
+        "datasource": { "type": "prometheus", "uid": "${ds}" },
+        "query": "label_values(container_memory_usage_bytes{job=~\"cadvisor.*\", container!=\"\", container!=\"POD\"}, name)",
+        "refresh": 1,
+        "sort": 1,
+        "current": { "text": "All", "value": ".*" },
+        "includeAll": true,
+        "allValue": ".*"
+      },
+      {
+        "type": "query",
+        "name": "sla_target",
+        "label": "SLA Target (blackbox instance)",
+        "datasource": { "type": "prometheus", "uid": "${ds}" },
+        "query": "label_values(probe_success{job=\"blackbox_http\"}, instance)",
+        "refresh": 1,
+        "sort": 1,
+        "current": { "text": "All", "value": ".*" },
+        "includeAll": true,
+        "allValue": ".*"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "type": "row",
+      "title": "SLA (Blackbox + Latency Threshold)",
+      "gridPos": { "x": 0, "y": 0, "w": 24, "h": 1 },
+      "collapsed": false
+    },
+    {
+      "type": "stat",
+      "title": "SLA 30d (%)",
+      "gridPos": { "x": 0, "y": 1, "w": 8, "h": 5 },
+      "datasource": { "type": "prometheus", "uid": "${ds}" },
+      "targets": [
+        { "refId": "A", "expr": "sla:probe_30d_percent{instance=~\"${sla_target}\"}" }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "percent", "decimals": 2 },
+        "overrides": []
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] } }
+    },
+    {
+      "type": "stat",
+      "title": "SLA 7d (%)",
+      "gridPos": { "x": 8, "y": 1, "w": 8, "h": 5 },
+      "datasource": { "type": "prometheus", "uid": "${ds}" },
+      "targets": [
+        { "refId": "A", "expr": "sla:probe_7d_percent{instance=~\"${sla_target}\"}" }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "percent", "decimals": 2 },
+        "overrides": []
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] } }
+    },
+    {
+      "type": "stat",
+      "title": "SLA 24h (%)",
+      "gridPos": { "x": 16, "y": 1, "w": 8, "h": 5 },
+      "datasource": { "type": "prometheus", "uid": "${ds}" },
+      "targets": [
+        { "refId": "A", "expr": "sla:probe_24h_percent{instance=~\"${sla_target}\"}" }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "percent", "decimals": 2 },
+        "overrides": []
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] } }
+    },
+    {
+      "type": "timeseries",
+      "title": "p95 Latency (seconds)",
+      "gridPos": { "x": 0, "y": 6, "w": 12, "h": 7 },
+      "datasource": { "type": "prometheus", "uid": "${ds}" },
+      "targets": [
+        { "refId": "A", "expr": "slo:probe_p95_seconds{instance=~\"${sla_target}\"}" }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "s", "decimals": 3 },
+        "overrides": []
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Probe Success (Up/Down)",
+      "gridPos": { "x": 12, "y": 6, "w": 12, "h": 7 },
+      "datasource": { "type": "prometheus", "uid": "${ds}" },
+      "targets": [
+        { "refId": "A", "expr": "probe_success{job=\"blackbox_http\", instance=~\"${sla_target}\"}" }
+      ],
+      "fieldConfig": {
+        "defaults": { "min": 0, "max": 1, "decimals": 0 },
+        "overrides": []
+      }
+    },
+
+    {
+      "type": "row",
+      "title": "Host Resources (node_exporter)",
+      "gridPos": { "x": 0, "y": 13, "w": 24, "h": 1 },
+      "collapsed": false
+    },
+    {
+      "type": "timeseries",
+      "title": "CPU Usage (%)",
+      "gridPos": { "x": 0, "y": 14, "w": 12, "h": 7 },
+      "datasource": { "type": "prometheus", "uid": "${ds}" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "(1 - avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\", instance=~\"${vm}\"}[5m]))) * 100"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "percent", "decimals": 2 }, "overrides": [] }
+    },
+    {
+      "type": "timeseries",
+      "title": "Memory Usage (%)",
+      "gridPos": { "x": 12, "y": 14, "w": 12, "h": 7 },
+      "datasource": { "type": "prometheus", "uid": "${ds}" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "((node_memory_MemTotal_bytes{instance=~\"${vm}\"} - node_memory_MemAvailable_bytes{instance=~\"${vm}\"}) / node_memory_MemTotal_bytes{instance=~\"${vm}\"}) * 100"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "percent", "decimals": 2 }, "overrides": [] }
+    },
+    {
+      "type": "timeseries",
+      "title": "Disk Usage (%) (all mountpoints)",
+      "gridPos": { "x": 0, "y": 21, "w": 12, "h": 7 },
+      "datasource": { "type": "prometheus", "uid": "${ds}" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "(1 - (node_filesystem_avail_bytes{fstype!~\"tmpfs|overlay\", mountpoint!~\"/var/lib/docker.*\", instance=~\"${vm}\"} / node_filesystem_size_bytes{fstype!~\"tmpfs|overlay\", mountpoint!~\"/var/lib/docker.*\", instance=~\"${vm}\"})) * 100"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "percent", "decimals": 2 }, "overrides": [] }
+    },
+    {
+      "type": "timeseries",
+      "title": "Network Throughput (bytes/s)",
+      "gridPos": { "x": 12, "y": 21, "w": 12, "h": 7 },
+      "datasource": { "type": "prometheus", "uid": "${ds}" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (instance) (rate(node_network_receive_bytes_total{device!~\"lo\", instance=~\"${vm}\"}[5m]))"
+        },
+        {
+          "refId": "B",
+          "expr": "sum by (instance) (rate(node_network_transmit_bytes_total{device!~\"lo\", instance=~\"${vm}\"}[5m]))"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "Bps", "decimals": 0 }, "overrides": [] }
+    },
+
+    {
+      "type": "row",
+      "title": "Containers (cAdvisor)",
+      "gridPos": { "x": 0, "y": 28, "w": 24, "h": 1 },
+      "collapsed": false
+    },
+    {
+      "type": "timeseries",
+      "title": "Top Containers CPU (cores)",
+      "gridPos": { "x": 0, "y": 29, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "${ds}" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "topk(10, sum by (instance, name) (rate(container_cpu_usage_seconds_total{container!=\"\", container!=\"POD\", name=~\"${container}\"}[5m])))"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "cores", "decimals": 3 }, "overrides": [] }
+    },
+    {
+      "type": "timeseries",
+      "title": "Top Containers Memory (bytes)",
+      "gridPos": { "x": 12, "y": 29, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "${ds}" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "topk(10, sum by (instance, name) (container_memory_usage_bytes{container!=\"\", container!=\"POD\", name=~\"${container}\"}))"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "bytes", "decimals": 0 }, "overrides": [] }
+    }
+  ]
+}

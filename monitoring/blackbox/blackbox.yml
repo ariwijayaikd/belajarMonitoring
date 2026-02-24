@@ -1,0 +1,12 @@
+modules:
+  http_2xx_15s:
+    prober: http
+    timeout: 5s
+    http:
+      method: GET
+      follow_redirects: true
+      valid_http_versions: ["HTTP/1.1", "HTTP/2.0"]
+
+  tcp_connect:
+    prober: tcp
+    timeout: 3s
